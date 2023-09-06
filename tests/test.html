@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <?php
+
+    // Include the PHPWord library
+    require_once 'vendor/autoload.php';
+
+    // Create a new PHPWord document
+    $phpWord = new \PhpOffice\PhpWord\PhpWord();
+
+    // Create a form element
+    $form = $phpWord->addForm();
+
+    // Add a text input field to the form
+    $textInput = $form->addTextInput('docx_file');
+    $textInput->setLabel('DOCX File');
+
+    // Add a submit button to the form
+    $submitButton = $form->addSubmitButton('Convert to PDF');
+
+    // Set the PDF renderer path
+    \PhpOffice\PhpWord\Settings::setPdfRenderer('DomPDF', base_path('vendor/dompdf/dompdf'));
+
+    // Process the form submission
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        // Get the DOCX file from the form
+        $docxFile = $_FILES['docx_file']['tmp_name'];
+
+        // Convert the DOCX file to PDF
+        $phpWord = \PhpOffice\PhpWord\IOFactory::load($docxFile);
+        $pdf = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'PDF');
+        $pdf->save($docxFile . '.pdf');
+
+        // Redirect to the PDF file
+        header('Location: ' . $docxFile . '.pdf');
+        exit;
+    }
+
+    // Display the form
+    echo $phpWord->saveHTML();
+    ?>
+</body>
+
+</html>
